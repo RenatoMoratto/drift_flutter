@@ -1,7 +1,9 @@
 import 'package:drift_flutter/src/components/custom_date_picker_form_field.dart';
 import 'package:drift_flutter/src/components/custom_text_form_field.dart';
+import 'package:drift_flutter/src/data/local/db/app_db.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:drift/drift.dart' as drift;
 
 class AddEmployeePage extends StatefulWidget {
   const AddEmployeePage({Key? key}) : super(key: key);
@@ -11,10 +13,56 @@ class AddEmployeePage extends StatefulWidget {
 }
 
 class _AddEmployeePageState extends State<AddEmployeePage> {
+  late AppDb _db;
   final _formKey = GlobalKey<FormState>();
   final Map<String, Object> _formData = {};
   final _dateOfBirthController = TextEditingController();
   DateTime? _dateOfBirth;
+
+  @override
+  initState() {
+    super.initState();
+    _db = AppDb();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _db.close();
+    _dateOfBirthController.dispose();
+  }
+
+  void _submitForm() {
+    final isValid = _formKey.currentState?.validate() ?? false;
+
+    if (!isValid || _dateOfBirth == null) {
+      return;
+    }
+
+    _formKey.currentState?.save();
+    final entity = EmployeeCompanion(
+      userName: drift.Value(_formData['userName'] as String),
+      firstName: drift.Value(_formData['firstName'] as String),
+      lastName: drift.Value(_formData['lastName'] as String),
+      dateOfBirth: drift.Value(_dateOfBirth!),
+    );
+
+    _db.insertEmployee(entity).then(
+          (value) => ScaffoldMessenger.of(context).showMaterialBanner(
+            MaterialBanner(
+              content: Text('New employee inserted: $value'),
+              actions: [
+                IconButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+                  },
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+          ),
+        );
+  }
 
   Future<void> pickDateOfBirth(BuildContext context) async {
     final initialDate = DateTime.now();
@@ -54,7 +102,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: _submitForm,
             icon: const Icon(Icons.save),
           ),
         ],
