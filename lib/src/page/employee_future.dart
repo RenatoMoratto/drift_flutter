@@ -1,7 +1,7 @@
-import 'package:drift_flutter/main.dart';
 import 'package:drift_flutter/src/data/local/db/app_db.dart';
 import 'package:drift_flutter/src/utils/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class EmployeeFuturePage extends StatelessWidget {
   const EmployeeFuturePage({Key? key}) : super(key: key);
@@ -14,7 +14,7 @@ class EmployeeFuturePage extends StatelessWidget {
         centerTitle: true,
       ),
       body: FutureBuilder<List<EmployeeData>>(
-        future: db.getEmployees(),
+        future: Provider.of<AppDb>(context).getEmployees(),
         builder: (context, snapshot) {
           final List<EmployeeData>? employees = snapshot.data;
 

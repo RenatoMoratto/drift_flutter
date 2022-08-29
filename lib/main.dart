@@ -4,13 +4,16 @@ import 'package:drift_flutter/src/page/edit_employee_page.dart';
 import 'package:drift_flutter/src/page/home_page.dart';
 import 'package:drift_flutter/src/utils/app_routes.dart';
 import 'package:flutter/material.dart';
-
-late AppDb db;
+import 'package:provider/provider.dart';
 
 void main() {
-  db = AppDb();
-
-  runApp(const MyApp());
+  runApp(
+    Provider(
+      create: (context) => AppDb(),
+      child: const MyApp(),
+      dispose: (context, AppDb db) => db.close(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

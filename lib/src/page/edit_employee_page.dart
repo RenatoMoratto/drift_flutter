@@ -1,10 +1,10 @@
-import 'package:drift_flutter/main.dart';
 import 'package:drift_flutter/src/components/custom_date_picker_form_field.dart';
 import 'package:drift_flutter/src/components/custom_text_form_field.dart';
 import 'package:drift_flutter/src/data/local/db/app_db.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:provider/provider.dart';
 
 class EditEmployeePage extends StatefulWidget {
   const EditEmployeePage({Key? key}) : super(key: key);
@@ -49,7 +49,10 @@ class _EditEmployeePageState extends State<EditEmployeePage> {
   }
 
   void _deleteEmployee() {
-    db
+    Provider.of<AppDb>(
+      context,
+      listen: false,
+    )
         .deleteEmployee(_formData['id'] as int)
         .then((value) => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -75,7 +78,10 @@ class _EditEmployeePageState extends State<EditEmployeePage> {
       dateOfBirth: drift.Value(_dateOfBirth!),
     );
 
-    db
+    Provider.of<AppDb>(
+      context,
+      listen: false,
+    )
         .updateEmployee(entity)
         .then((value) => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
