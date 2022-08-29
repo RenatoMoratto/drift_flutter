@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 
 class CustomTextFormField extends StatelessWidget {
   final String label;
+  final String? initialValue;
   final void Function(String?) onSaved;
 
   const CustomTextFormField({
     Key? key,
     required this.label,
     required this.onSaved,
+    this.initialValue,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      initialValue: initialValue ?? '',
       onSaved: onSaved,
       keyboardType: TextInputType.name,
       decoration: InputDecoration(
