@@ -1,3 +1,4 @@
+import 'package:drift_flutter/main.dart';
 import 'package:drift_flutter/src/components/custom_date_picker_form_field.dart';
 import 'package:drift_flutter/src/components/custom_text_form_field.dart';
 import 'package:drift_flutter/src/data/local/db/app_db.dart';
@@ -13,22 +14,14 @@ class AddEmployeePage extends StatefulWidget {
 }
 
 class _AddEmployeePageState extends State<AddEmployeePage> {
-  late AppDb _db;
   final _formKey = GlobalKey<FormState>();
   final Map<String, Object> _formData = {};
   final _dateOfBirthController = TextEditingController();
   DateTime? _dateOfBirth;
 
   @override
-  initState() {
-    super.initState();
-    _db = AppDb();
-  }
-
-  @override
   void dispose() {
     super.dispose();
-    _db.close();
     _dateOfBirthController.dispose();
   }
 
@@ -47,21 +40,17 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
       dateOfBirth: drift.Value(_dateOfBirth!),
     );
 
-    _db.insertEmployee(entity).then(
-          (value) => ScaffoldMessenger.of(context).showMaterialBanner(
-            MaterialBanner(
-              content: Text('New employee inserted: $value'),
-              actions: [
-                IconButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
-                  },
-                  icon: const Icon(Icons.close),
+    db
+        .insertEmployee(entity)
+        .then((value) => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'New employee inserted: $value',
+                  style: const TextStyle(color: Colors.black),
                 ),
-              ],
-            ),
-          ),
-        );
+                backgroundColor: Colors.greenAccent,
+              ),
+            ));
   }
 
   Future<void> pickDateOfBirth(BuildContext context) async {
