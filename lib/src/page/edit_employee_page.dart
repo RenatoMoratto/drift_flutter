@@ -1,6 +1,7 @@
 import 'package:drift_flutter/src/components/custom_date_picker_form_field.dart';
 import 'package:drift_flutter/src/components/custom_text_form_field.dart';
 import 'package:drift_flutter/src/data/local/db/app_db.dart';
+import 'package:drift_flutter/src/provider/employee_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' as drift;
@@ -18,6 +19,7 @@ class _EditEmployeePageState extends State<EditEmployeePage> {
   final Map<String, Object> _formData = {};
   final _dateOfBirthController = TextEditingController();
   DateTime? _dateOfBirth;
+  late EmployeeProvider _employeeProvider;
 
   @override
   void didChangeDependencies() {
@@ -43,26 +45,25 @@ class _EditEmployeePageState extends State<EditEmployeePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+
+    _employeeProvider = Provider.of<EmployeeProvider>(context, listen: false);
+    _employeeProvider.addListener(providerListener);
+  }
+
+  @override
   void dispose() {
     super.dispose();
     _dateOfBirthController.dispose();
+    _employeeProvider.dispose();
   }
 
   void _deleteEmployee() {
-    Provider.of<AppDb>(
-      context,
-      listen: false,
-    )
-        .deleteEmployee(_formData['id'] as int)
-        .then((value) => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Employee deleted'),
-                backgroundColor: Colors.redAccent,
-              ),
-            ));
+    context.read<EmployeeProvider>().deleteEmployee(_formData['id'] as int);
   }
 
-  void _submitForm() {
+  void _editEmployee() {
     final isValid = _formKey.currentState?.validate() ?? false;
 
     if (!isValid || _dateOfBirth == null) {
@@ -78,20 +79,37 @@ class _EditEmployeePageState extends State<EditEmployeePage> {
       dateOfBirth: drift.Value(_dateOfBirth!),
     );
 
-    Provider.of<AppDb>(
-      context,
-      listen: false,
-    )
-        .updateEmployee(entity)
-        .then((value) => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Employee updated',
-                  style: TextStyle(color: Colors.black),
-                ),
-                backgroundColor: Colors.greenAccent,
-              ),
-            ));
+    context.read<EmployeeProvider>().updateEmployee(entity);
+  }
+
+  void providerListener() {
+    if (_employeeProvider.isUpdated) {
+      listenUpdate();
+    }
+    if (_employeeProvider.isDeleted) {
+      listenDelete();
+    }
+  }
+
+  void listenDelete() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Employee deleted'),
+        backgroundColor: Colors.redAccent,
+      ),
+    );
+  }
+
+  void listenUpdate() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Employee updated',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.greenAccent,
+      ),
+    );
   }
 
   Future<void> pickDateOfBirth(BuildContext context) async {
@@ -132,7 +150,7 @@ class _EditEmployeePageState extends State<EditEmployeePage> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: _submitForm,
+            onPressed: _editEmployee,
             icon: const Icon(Icons.save),
           ),
           IconButton(

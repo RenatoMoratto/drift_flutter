@@ -1,6 +1,7 @@
 import 'package:drift_flutter/src/components/custom_date_picker_form_field.dart';
 import 'package:drift_flutter/src/components/custom_text_form_field.dart';
 import 'package:drift_flutter/src/data/local/db/app_db.dart';
+import 'package:drift_flutter/src/provider/employee_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' as drift;
@@ -18,11 +19,20 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
   final Map<String, Object> _formData = {};
   final _dateOfBirthController = TextEditingController();
   DateTime? _dateOfBirth;
+  late EmployeeProvider _employeeProvider;
+
+  @override
+  void initState() {
+    super.initState();
+    _employeeProvider = Provider.of<EmployeeProvider>(context, listen: false);
+    _employeeProvider.addListener(providerListener);
+  }
 
   @override
   void dispose() {
     super.dispose();
     _dateOfBirthController.dispose();
+    _employeeProvider.dispose();
   }
 
   void _submitForm() {
@@ -40,20 +50,21 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
       dateOfBirth: drift.Value(_dateOfBirth!),
     );
 
-    Provider.of<AppDb>(
-      context,
-      listen: false,
-    )
-        .insertEmployee(entity)
-        .then((value) => ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'New employee inserted: $value',
-                  style: const TextStyle(color: Colors.black),
-                ),
-                backgroundColor: Colors.greenAccent,
-              ),
-            ));
+    context.read<EmployeeProvider>().createEmployee(entity);
+  }
+
+  void providerListener() {
+    if (_employeeProvider.isAdded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'New employee inserted',
+            style: TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.greenAccent,
+        ),
+      );
+    }
   }
 
   Future<void> pickDateOfBirth(BuildContext context) async {
