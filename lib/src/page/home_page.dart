@@ -1,7 +1,9 @@
 import 'package:drift_flutter/src/page/employee_future.dart';
 import 'package:drift_flutter/src/page/employee_stream.dart';
+import 'package:drift_flutter/src/provider/employee_provider.dart';
 import 'package:drift_flutter/src/utils/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -31,6 +33,9 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: index,
         onTap: (value) {
+          if (value == 1) {
+            context.read<EmployeeProvider>().getEmployeeStream();
+          }
           setState(() {
             index = value;
           });
